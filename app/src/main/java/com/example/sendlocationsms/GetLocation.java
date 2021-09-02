@@ -1,8 +1,10 @@
 package com.example.sendlocationsms;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
@@ -32,7 +34,7 @@ import com.google.android.gms.tasks.Task;
 import java.text.DateFormat;
 import java.util.Date;
 
-public class GetLocation extends Service {
+public class GetLocation{
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -91,14 +93,17 @@ public class GetLocation extends Service {
 
 
 
-    public Activity mainActivity;
+//    public Activity mainActivity;
     public String telNumber;
-    public GetLocation(Activity mainActivity1, String telNumber1) {
-        mainActivity = mainActivity1;
-        telNumber = telNumber1;
+    public Context context;
+    public GetLocation(String telNumber1, Context context1) {
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mSettingsClient = LocationServices.getSettingsClient(mainActivity);
+        telNumber = telNumber1;
+        context = context1;
+//        Toast.makeText(context, "Tel = " + telNumber, Toast.LENGTH_LONG).show();   //getApplicationContext
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+        mSettingsClient = LocationServices.getSettingsClient(context);
 
 //        mLastUpdateTime = "";
         mRequestingLocationUpdates = false;
@@ -113,9 +118,7 @@ public class GetLocation extends Service {
         startUpdatesButtonHandler();
     }
 
-    public String sayPrivet() {
-        return "PRIVET";
-    }
+
 
 
     public void startUpdatesButtonHandler() {
@@ -128,7 +131,7 @@ public class GetLocation extends Service {
 
     private void startLocationUpdates() {
         // Begin by checking if the device has the necessary location settings.
-        mSettingsClient = LocationServices.getSettingsClient(mainActivity);
+        mSettingsClient = LocationServices.getSettingsClient(context);
 
         mSettingsClient.checkLocationSettings(mLocationSettingsRequest)
                 .addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
@@ -150,19 +153,11 @@ public class GetLocation extends Service {
                         switch (statusCode) {
                             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                                 Log.i(TAG, "Location settings are not satisfied. Attempting to upgrade location settings ");
-                                try {
-                                    // Show the dialog by calling startResolutionForResult(), and check the
-                                    // result in onActivityResult().
-                                    ResolvableApiException rae = (ResolvableApiException) e;
-                                    rae.startResolutionForResult(mainActivity, REQUEST_CHECK_SETTINGS);
-                                } catch (IntentSender.SendIntentException sie) {
-                                    Log.i(TAG, "PendingIntent unable to execute request.");
-                                }
                                 break;
                             case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                                 String errorMessage = "Location settings are inadequate, and cannot be fixed here. Fix in Settings.";
                                 Log.e(TAG, errorMessage);
-                                Toast.makeText(mainActivity, errorMessage, Toast.LENGTH_LONG).show();
+                                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
                                 mRequestingLocationUpdates = false;
                         }
 
@@ -190,14 +185,14 @@ public class GetLocation extends Service {
             // Только один раз получаем данные. Без этого - постоянное обновление
             stopLocationUpdates();
 
-            Toast.makeText(mainActivity, "Latitude = " + latitude + "     " + "Longitude = " + longitude + "    " + "Tel = " + telNumber, Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Latitude = " + latitude + "     " + "Longitude = " + longitude + "    " + "Tel = " + telNumber, Toast.LENGTH_LONG).show();
 
             //  Отсылаем смс
             String msgLocation = "http://maps.google.com/?q=" + latitude + "," + longitude;
             if (telNumber != null) {
                 SmsManager sms = SmsManager.getDefault();
                 sms.sendTextMessage(telNumber, null, msgLocation, PendingIntent.getBroadcast(
-                        this.mainActivity, 0, new Intent(SMS_SENT_ACTION), 0), PendingIntent.getBroadcast(this.mainActivity, 0, new Intent(SMS_DELIVERED_ACTION), 0));
+                        context, 0, new Intent(SMS_SENT_ACTION), 0), PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED_ACTION), 0));
             }
 
         } else {
@@ -252,19 +247,22 @@ public class GetLocation extends Service {
     private void stopLocationUpdates() {
         if (!mRequestingLocationUpdates) {
             Log.d(TAG, "stopLocationUpdates: updates never requested, no-op.");
+
             return;
         }
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        mRequestingLocationUpdates = false;
 
         // It is a good practice to remove location requests when the activity is in a paused or
         // stopped state. Doing so helps battery performance and is especially
         // recommended in applications that request frequent location updates.
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback)
-                .addOnCompleteListener(mainActivity, new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        mRequestingLocationUpdates = false;
-                    }
-                });
+//        mFusedLocationClient.removeLocationUpdates(mLocationCallback)
+//                .addOnCompleteListener(getParent(), new OnCompleteListener<Void>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<Void> task) {
+//                        mRequestingLocationUpdates = false;
+//                    }
+//                });
     }
 
 
