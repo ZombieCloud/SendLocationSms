@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
+import android.widget.Toast;
 
 public class SmsReceiver extends BroadcastReceiver {
 
@@ -46,8 +47,8 @@ public class SmsReceiver extends BroadcastReceiver {
                     }
 
                     // Build the message to show.
-//                    strMessage += "SMS from " + msgs[i].getOriginatingAddress();
-//                    strMessage += " :" + msgs[i].getMessageBody() + "\n";
+                    strMessage += "SMS from " + msgs[i].getOriginatingAddress();
+                    strMessage += " :" + msgs[i].getMessageBody() + "\n";
 
                     // Log and display the SMS message.
 //                    Log.d(TAG, "PRIVETTT_8: " + strMessage);
@@ -56,11 +57,14 @@ public class SmsReceiver extends BroadcastReceiver {
                     // Стартуем MainActivity, при старте определяем координаты и ответная смс
                     String keyString = "WhereAreYouuu";
                     if (msgs[i].getMessageBody().toLowerCase().contains(keyString.toLowerCase())) {
-                        Intent mIntent = new Intent(context, MainActivity.class);
-                        mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TASK);   // FLAG_ACTIVITY_CLEAR_TASK - для того, чтоб MainActivity рестартовалась при каждой смс
-                        mIntent.putExtra("STR_TEL_NUMBER", msgs[i].getOriginatingAddress());
-                        mIntent.putExtra("STR_MESSAGE", msgs[i].getMessageBody());
-                        context.startActivity(mIntent);
+                        GetLocation gl = new GetLocation(msgs[i].getOriginatingAddress(), context);
+
+
+//                        Intent mIntent = new Intent(context, MainActivity.class);
+//                        mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TASK);   // FLAG_ACTIVITY_CLEAR_TASK - для того, чтоб MainActivity рестартовалась при каждой смс
+//                        mIntent.putExtra("STR_TEL_NUMBER", msgs[i].getOriginatingAddress());
+//                        mIntent.putExtra("STR_MESSAGE", msgs[i].getMessageBody());
+//                        context.startActivity(mIntent);
                     }
                 }
         }
