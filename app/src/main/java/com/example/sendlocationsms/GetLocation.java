@@ -149,19 +149,30 @@ public class GetLocation{
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+
+                        SmsManager sms = SmsManager.getDefault();
+
                         int statusCode = ((ApiException) e).getStatusCode();
                         switch (statusCode) {
                             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                                Log.i(TAG, "Location settings are not satisfied. Attempting to upgrade location settings ");
+//                                Log.i(TAG, "Location settings are not satisfied. Attempting to upgrade location settings ");
+
+                                sms.sendTextMessage(telNumber, null, "Check app permissions, or Turn on location, or No location sources are available", PendingIntent.getBroadcast(
+                                        context, 0, new Intent(SMS_SENT_ACTION), 0), PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED_ACTION), 0));
+
                                 break;
                             case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                                String errorMessage = "Location settings are inadequate, and cannot be fixed here. Fix in Settings.";
-                                Log.e(TAG, errorMessage);
-                                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
+//                                String errorMessage = "Location settings are inadequate, and cannot be fixed here. Fix in Settings.";
+//                                Log.e(TAG, errorMessage);
+//                                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
+
+                                sms.sendTextMessage(telNumber, null, "Check app permissions, or Turn on location, or No location sources are available", PendingIntent.getBroadcast(
+                                        context, 0, new Intent(SMS_SENT_ACTION), 0), PendingIntent.getBroadcast(context, 0, new Intent(SMS_DELIVERED_ACTION), 0));
+
                                 mRequestingLocationUpdates = false;
                         }
 
-                        updateUI();
+//                        updateUI();
                     }
                 }
                 );
@@ -196,7 +207,7 @@ public class GetLocation{
             }
 
         } else {
-//            Log.i(TAG, "No location");
+//            Log.i(TAG, "No location");   // Сюда сначала попадает, а потом определяет
 //            Toast.makeText(mainActivity, "No location", Toast.LENGTH_LONG).show();
         }
     }
